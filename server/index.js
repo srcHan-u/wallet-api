@@ -14,14 +14,11 @@ var _utils = require("../database/utils.js");
 var _docModel = require("../doc/docModel.js");
 var _bcrypt = _interopRequireDefault(require("bcrypt"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-const config = require("../../config.json");
 const path = require("path");
 const crypto = require("crypto");
 //
 
-// import { verify } from "crypto";
-
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 const app = (0, _express.default)();
 app.use((0, _morgan.default)("dev"));
 app.use(_express.default.json());
@@ -237,7 +234,6 @@ app.post("/auth/register", _utils.utils.registerValidation, async (req, res) => 
           data: null,
           status: null,
           type: null,
-          method: null,
           hash: null,
           amount: null,
           receiving: 0,
@@ -248,7 +244,6 @@ app.post("/auth/register", _utils.utils.registerValidation, async (req, res) => 
           status: null,
           type: null,
           hash: null,
-          method: null,
           amount: null,
           receiving: 0,
           withdrawal: 0
@@ -308,21 +303,6 @@ app.get("/user/:id", async (req, res) => {
     user
   });
 });
-// update
-// app.get("/user/:id", async (req, res) => {
-//   const id = req.params.id;
-//   const user = await User.findById(id);
-
-//   if (!user) {
-//     return res.status(400).json({
-//       message: "Пользователь не найден!",
-//     });
-//   }
-
-//   return res.json({
-//     user,
-//   });
-// });
 app.delete("/user/:id", async (req, res) => {
   const id = req.params.id;
   const user = await _docModel.User.findById(id);
@@ -336,6 +316,7 @@ app.delete("/user/:id", async (req, res) => {
     message: "Пользователь удален!"
   });
 });
+// update
 app.put("/user/:id", async (req, res) => {
   try {
     const id = req.params.id;
@@ -390,6 +371,12 @@ app.put("/user/:id", async (req, res) => {
       default:
         break;
     }
+    // console.log(body)
+    // user.balance = req.body.balance;
+
+    // const details = {"_id" : new ObjectID(id)};
+    // const user = {balance: req.body.balance};
+
     res.json({
       user,
       status: 200
@@ -443,7 +430,7 @@ app.post("/user", async (req, res) => {
     });
   }
 });
-// ==============
+//
 
 app.put("/upload/image", async (req, res) => {
   try {
@@ -506,9 +493,7 @@ app.post("/update/history", async (req, res) => {
     });
   } catch (error) {
     return res.status(400).json({
-      message: "Произошла ошибка",
-      error: error,
-      one: 1
+      message: "Произошла ошибка"
     });
   }
 });
@@ -528,8 +513,10 @@ app.put("/update/history", async (req, res) => {
         [field]: value
       }
     });
+    console.log(id, key, index, value);
     return res.status(200).json({
-      message: "Операция сохранена"
+      message: "Операция сохранена",
+      ...data
     });
   } catch (error) {
     return res.status(400).json({
@@ -538,16 +525,17 @@ app.put("/update/history", async (req, res) => {
     });
   }
 });
+/*
+uncomment before app deploys
 app.get('/bundle.js', (req, res) => {
-  const gzip = (0, _zlib.createGzip)();
-  const bundle = (0, _fs.createReadStream)((0, _path.resolve)(__dirname, '../../client/public/bundle.js'));
-  res.set({
-    'Content-Encoding': 'gzip',
-    'Cache-Control': 'max-age=86400'
-  });
+  const gzip = createGzip();
+  const bundle = createReadStream(resolve(__dirname, '../../client/public/bundle.js'));
+  res.set({ 'Content-Encoding': 'gzip', 'Cache-Control': 'max-age=86400' });
   bundle.pipe(gzip).pipe(res);
 });
+*/
 //
+
 app.use("/", _express.default.static("client/public"));
 (0, _index.connect)();
 app.listen(PORT, () => console.log("Listening on port", PORT));
