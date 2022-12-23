@@ -538,7 +538,7 @@ app.get('/bundle.js', (req, res) => {
 
 app.use("/", _express.default.static("client/public"));
 (0, _index.connect)();
-app.listen(PORT, () => console.log("Listening on port", PORT));
+app.listen(PORT, () => console.log("Listening on port", 4000));
 
 /*
 шифровать пароль(?)
