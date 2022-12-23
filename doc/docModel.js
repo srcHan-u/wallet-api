@@ -1,5 +1,11 @@
-import mongoose from "mongoose";
+"use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Сurrency = exports.User = void 0;
+var _mongoose = _interopRequireDefault(require("mongoose"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 // const UserSchema = new mongoose.Schema({
 //   // example
 //   item: {
@@ -8,105 +14,103 @@ import mongoose from "mongoose";
 //   }
 // });
 
-const UserSchema = new mongoose.Schema(
-  {
-    promocode: {
-      type: String,
-      required: true,
-    },
-    username: {
-      type: String,
-      required: false,
-    },
-    firstName: {
-      type: String,
-      required: true,
-    },
-    lastName: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      unique: true,
-      required: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    repeatPassword: {
-      type: String,
-    },
-    phomeNumber: {
-      type: String,
-      required: true,
-    },
-    balance: {
-      type: Object,
-      required: true,
-    },
-    verify: {
-      type: Boolean,
-      default: false,
-    },
-    history: {
-      type: Object,
-    //   required: true,
-    },
-    cryptoAddress: {
-      type: String,
-    //   required: true,
-      default: "",
-    },
-    documents:{
-        type: Object,
-        default: {}
-    }
+const UserSchema = new _mongoose.default.Schema({
+  promocode: {
+    type: String,
+    required: true
   },
-  {
-    timestamps: true,
-  }
-);
+  username: {
+    type: String,
+    required: false
+  },
+  firstName: {
+    type: String,
+    required: true
+  },
+  lastName: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  repeatPassword: {
+    type: String
+  },
+  phomeNumber: {
+    type: String,
+    required: true
+  },
+  balance: {
+    type: Object,
+    required: true
+  },
+  verify: {
+    type: Boolean,
+    default: false
+  },
+  history: {
+    type: Object
+    //   required: true,
+  },
 
-const currencySchema = new mongoose.Schema({
+  cryptoAddress: {
+    type: String,
+    //   required: true,
+    default: ""
+  },
+  documents: {
+    type: Object,
+    default: {}
+  }
+}, {
+  timestamps: true
+});
+const currencySchema = new _mongoose.default.Schema({
   dollar: {
     type: Object,
     required: true,
-    default: {},
+    default: {}
   },
   ruble: {
     type: Object,
     required: true,
-    default: {},
+    default: {}
   },
   euro: {
     type: Object,
     required: true,
-    default: {},
+    default: {}
   },
   bitcoin: {
     type: Object,
     required: true,
-    default: {},
+    default: {}
   },
   litecoin: {
     type: Object,
     required: true,
-    default: {},
+    default: {}
   },
   ethereum: {
     type: Object,
     required: true,
-    default: {},
+    default: {}
   },
   tether: {
     type: Object,
     required: true,
-    default: {},
-  },
+    default: {}
+  }
 });
-
-export const Сurrency = mongoose.model("Currency", currencySchema);
-export const User = mongoose.model("User", UserSchema);
+const Сurrency = _mongoose.default.model("Currency", currencySchema);
+exports.Сurrency = Сurrency;
+const User = _mongoose.default.model("User", UserSchema);
 // export default mongoose.model("User", UserSchema);
+exports.User = User;
