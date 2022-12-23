@@ -15,9 +15,10 @@ var _docModel = require("../doc/docModel.js");
 var _bcrypt = _interopRequireDefault(require("bcrypt"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 const path = require("path");
+const crypto = require("crypto");
 //
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 const app = (0, _express.default)();
 app.use((0, _morgan.default)("dev"));
 app.use(_express.default.json());
@@ -111,8 +112,7 @@ app.post("/doc/currency", async (req, res) => {
     });
     const currency = await doc.save();
     res.json({
-      ...currency._doc,
-      message: "okey"
+      ...currency._doc
     });
   } catch (e) {
     console.log(e);
@@ -129,15 +129,17 @@ app.put("/doc/currency", async (req, res) => {
       value
     } = req.body;
     const field = `${from}.${to}`;
+    const id = "6399c8a51cd6fde53fd7b736";
     await _docModel.Сurrency.findByIdAndUpdate({
-      _id: "639106e353af0f0d19b6178c"
+      _id: id
     }, {
       $set: {
         [field]: Number(value)
       }
     });
     return res.status(200).json({
-      message: "Данные обновлены"
+      message: "Данные обновлены",
+      field
     });
   } catch (e) {
     res.status(400).json({
@@ -198,7 +200,7 @@ app.post("/auth/register", _utils.utils.registerValidation, async (req, res) => 
     if (!errors.isEmpty()) {
       return res.status(400).json(errors.array());
     }
-    if (req.body.promocode !== "promocode" || req.body.promocode === "") {
+    if (req.body.promocode !== "751602" || req.body.promocode === "") {
       return res.status(400).json({
         message: "Невереный промокод"
       });

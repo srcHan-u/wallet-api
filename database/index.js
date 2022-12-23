@@ -8,6 +8,7 @@ var _mongoose = _interopRequireDefault(require("mongoose"));
 var _URI = require("./URI");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 const connect = (location = _URI.URI) => {
+  _mongoose.default.set("strictQuery", true);
   _mongoose.default.connect(location);
   const db = _mongoose.default.connection;
   db.on('error', err => console.log('connection error:', err));
