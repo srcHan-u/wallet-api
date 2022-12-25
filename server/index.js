@@ -316,6 +316,7 @@ app.delete("/user/:id", async (req, res) => {
     message: "Пользователь удален!"
   });
 });
+
 // update
 app.put("/user/:id", async (req, res) => {
   try {
@@ -525,20 +526,17 @@ app.put("/update/history", async (req, res) => {
     });
   }
 });
-/*
-uncomment before app deploys
-app.get('/bundle.js', (req, res) => {
-  const gzip = createGzip();
-  const bundle = createReadStream(resolve(__dirname, '../../client/public/bundle.js'));
-  res.set({ 'Content-Encoding': 'gzip', 'Cache-Control': 'max-age=86400' });
-  bundle.pipe(gzip).pipe(res);
-});
-*/
-//
+
+// app.get('/bundle.js', (req, res) => {
+//   const gzip = createGzip();
+//   const bundle = createReadStream(resolve(__dirname, '../../client/public/bundle.js'));
+//   res.set({ 'Content-Encoding': 'gzip', 'Cache-Control': 'max-age=86400' });
+//   bundle.pipe(gzip).pipe(res);
+// });
 
 app.use("/", _express.default.static("client/public"));
 (0, _index.connect)();
-app.listen(PORT, () => console.log("Listening on port", 4000));
+app.listen(PORT, () => console.log("Listening on port", PORT));
 
 /*
 шифровать пароль(?)
