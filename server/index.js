@@ -122,7 +122,6 @@ app.put("/doc/currency", async (req, res) => {
     } = req.body;
     if (from && to && value) {
       const field = `${from}.${to}`;
-      console.log(field);
       const id = "6399c8a51cd6fde53fd7b736";
       await _docModel.Сurrency.findByIdAndUpdate({
         _id: id
@@ -323,7 +322,9 @@ app.put("/user/:id", async (req, res) => {
     const id = req.params.id;
     const user = await _docModel.User.findById(id);
     const {
-      key
+      key,
+      field,
+      value
     } = req.body;
     if (!user) {
       res.status(400).json({
@@ -369,15 +370,21 @@ app.put("/user/:id", async (req, res) => {
           }
         });
         break;
+      case "password":
+        const {
+          password
+        } = req.body;
+        await _docModel.User.findOneAndUpdate({
+          _id: id
+        }, {
+          $set: {
+            "password": password
+          }
+        });
+        break;
       default:
         break;
     }
-    // console.log(body)
-    // user.balance = req.body.balance;
-
-    // const details = {"_id" : new ObjectID(id)};
-    // const user = {balance: req.body.balance};
-
     res.json({
       user,
       status: 200
@@ -514,7 +521,6 @@ app.put("/update/history", async (req, res) => {
         [field]: value
       }
     });
-    console.log(id, key, index, value);
     return res.status(200).json({
       message: "Операция сохранена",
       ...data
