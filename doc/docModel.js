@@ -15,10 +15,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 // });
 
 const UserSchema = new _mongoose.default.Schema({
-  promocode: {
-    type: String,
-    required: true
-  },
   username: {
     type: String,
     required: false

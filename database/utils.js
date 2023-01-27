@@ -29,7 +29,7 @@ const registerValidation = [(0, _expressValidator.body)("email", "Неверны
   min: 5
 }), (0, _expressValidator.body)("repeatPassword", "Пароль не совпадает!").isLength({
   min: 5
-}), (0, _expressValidator.body)("promocode", "Не указан промокод!").isString(), (0, _expressValidator.body)("firstName", "Не указано имя!").isString(), (0, _expressValidator.body)("lastName", "Не указана фамилия!").isString(), (0, _expressValidator.body)("phomeNumber", "Не указан номер телефона!").isString(), (0, _expressValidator.body)("username", "Укажите логин, оно должно быть минимум 5 символа").isLength({
+}), (0, _expressValidator.body)("firstName", "Не указано имя!").isString(), (0, _expressValidator.body)("lastName", "Не указана фамилия!").isString(), (0, _expressValidator.body)("phomeNumber", "Не указан номер телефона!").isString(), (0, _expressValidator.body)("username", "Укажите логин, оно должно быть минимум 5 символа").isLength({
   min: 5
 })];
 const utils = {

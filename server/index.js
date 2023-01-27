@@ -7,23 +7,42 @@ var _docRouter = _interopRequireDefault(require("../doc/docRouter"));
 var _zlib = require("zlib");
 var _fs = require("fs");
 var _path = require("path");
+var _expressFileupload = _interopRequireDefault(require("express-fileupload"));
 var _cors = _interopRequireDefault(require("cors"));
+var _multer = _interopRequireDefault(require("multer"));
 var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
 var _expressValidator = require("express-validator");
 var _utils = require("../database/utils.js");
 var _docModel = require("../doc/docModel.js");
 var _bcrypt = _interopRequireDefault(require("bcrypt"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-const path = require("path");
-const crypto = require("crypto");
+// import { cpUpload } from "../middleware/file"; 
+
+const upload = (0, _multer.default)({
+  dest: "backend/uploads/"
+});
+const cpUpload = upload.array("documents", 5);
 //
 
-const PORT = process.env.PORT || 4000;
+// import { verify } from "crypto";
+
+const PORT = process.env.PORT || 3000;
 const app = (0, _express.default)();
+const path = require("path");
+const fs = require("fs");
+const crypto = require("crypto");
+app.use((0, _expressFileupload.default)({}));
 app.use((0, _morgan.default)("dev"));
 app.use(_express.default.json());
 app.use((0, _cors.default)());
 app.use("/api", _docRouter.default);
+app.get("/wallet/documents", function (req, res) {
+  res.sendFile(path.resolve(__dirname, "../../client/public/index.html"), function (err) {
+    if (err) {
+      res.status(500).send(err);
+    }
+  });
+});
 app.get("/doc/currency", async (req, res) => {
   try {
     const data = await _docModel.Сurrency.find();
@@ -120,26 +139,17 @@ app.put("/doc/currency", async (req, res) => {
       to,
       value
     } = req.body;
-    if (from && to && value) {
-      const field = `${from}.${to}`;
-      console.log(field);
-      const id = "6399c8a51cd6fde53fd7b736";
-      await _docModel.Сurrency.findByIdAndUpdate({
-        _id: id
-      }, {
-        $set: {
-          [field]: Number(value)
-        }
-      });
-      return res.status(200).json({
-        message: "Данные обновлены",
-        field
-      });
-    } else {
-      return res.status(400).json({
-        message: "Неверно указаны данные"
-      });
-    }
+    const field = `${from}.${to}`;
+    await _docModel.Сurrency.findByIdAndUpdate({
+      _id: "6399c8a51cd6fde53fd7b736"
+    }, {
+      $set: {
+        [field]: Number(value)
+      }
+    });
+    return res.status(200).json({
+      message: "Данные обновлены"
+    });
   } catch (e) {
     res.status(400).json({
       message: "Не удалось обновить данные!",
@@ -199,11 +209,6 @@ app.post("/auth/register", _utils.utils.registerValidation, async (req, res) => 
     if (!errors.isEmpty()) {
       return res.status(400).json(errors.array());
     }
-    if (req.body.promocode !== "751602" || req.body.promocode === "") {
-      return res.status(400).json({
-        message: "Невереный промокод"
-      });
-    }
     if (req.body.password !== req.body.repeatPassword) {
       return res.status(400).json({
         message: "Пароли не совпадают"
@@ -214,7 +219,6 @@ app.post("/auth/register", _utils.utils.registerValidation, async (req, res) => 
     const passwordHash = await _bcrypt.default.hash(password, salt);
     const doc = new _docModel.User({
       email: req.body.email,
-      promocode: req.body.promocode,
       username: req.body.username,
       firstName: req.body.firstName,
       lastName: req.body.lastName,
@@ -227,15 +231,18 @@ app.post("/auth/register", _utils.utils.registerValidation, async (req, res) => 
         bitcoin: 0,
         litecoin: 0,
         tether: 0,
-        ethereum: 0
+        ethereum: 0,
+        declaredBitcoin: 0
       },
       history: {
         bitcoin: [{
           data: null,
           status: null,
           type: null,
+          method: null,
           hash: null,
           amount: null,
+          walletAddress: null,
           receiving: 0,
           withdrawal: 0
         }],
@@ -244,7 +251,9 @@ app.post("/auth/register", _utils.utils.registerValidation, async (req, res) => 
           status: null,
           type: null,
           hash: null,
+          method: null,
           amount: null,
+          walletAddress: null,
           receiving: 0,
           withdrawal: 0
         }]
@@ -303,6 +312,8 @@ app.get("/user/:id", async (req, res) => {
     user
   });
 });
+// update
+
 app.delete("/user/:id", async (req, res) => {
   const id = req.params.id;
   const user = await _docModel.User.findById(id);
@@ -316,20 +327,21 @@ app.delete("/user/:id", async (req, res) => {
     message: "Пользователь удален!"
   });
 });
-
-// update
 app.put("/user/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const user = await _docModel.User.findById(id);
     const {
-      key
+      key,
+      field,
+      value
     } = req.body;
     if (!user) {
       res.status(400).json({
         message: "Такого пользователя нет"
       });
     }
+    //  await User.findOneAndUpdate({_id: id}, {$set: {[field]: value}})
     switch (key) {
       case "verify":
         const {
@@ -355,6 +367,18 @@ app.put("/user/:id", async (req, res) => {
           }
         });
         break;
+      case "declared":
+        const {
+          declaredValue
+        } = req.body;
+        await _docModel.User.findOneAndUpdate({
+          _id: id
+        }, {
+          $set: {
+            "balance.declaredBitcoin": declaredValue
+          }
+        });
+        break;
       case "balance":
         const {
           currency,
@@ -369,15 +393,33 @@ app.put("/user/:id", async (req, res) => {
           }
         });
         break;
+      case "password":
+        const {
+          password
+        } = req.body;
+        await _docModel.User.findOneAndUpdate({
+          _id: id
+        }, {
+          $set: {
+            "password": password
+          }
+        });
+        break;
+      case "documents":
+        const {
+          a
+        } = req.body;
+        await _docModel.User.findOneAndUpdate({
+          _id: id
+        }, {
+          $set: {
+            "password": password
+          }
+        });
+        break;
       default:
         break;
     }
-    // console.log(body)
-    // user.balance = req.body.balance;
-
-    // const details = {"_id" : new ObjectID(id)};
-    // const user = {balance: req.body.balance};
-
     res.json({
       user,
       status: 200
@@ -431,34 +473,34 @@ app.post("/user", async (req, res) => {
     });
   }
 });
-//
+// ==============
 
-app.put("/upload/image", async (req, res) => {
+app.post("/upload/image", cpUpload, async (req, res) => {
   try {
+    // const {id, files} = req.body
     const {
+      files,
       id
     } = req.body;
-    const {
-      file
-    } = req.body;
+    // const parent = await File.fin
     const user = await _docModel.User.findById(id);
-    await _docModel.User.findOneAndUpdate({
-      _id: id
-    }, {
-      $push: {
-        "documents.url": file
-      }
-    });
-    return res.json({
-      status: 200,
-      message: "Фото загруженно"
-    });
+    console.log("id>>>", id);
+    console.log("files>>>", files);
+    console.log("body>>>", req.body);
+    if (!user) {
+      return res.status(400).json({
+        message: "Пользователь не найден!"
+      });
+    }
   } catch (e) {
-    return res.status(400).json({
-      message: "Не удалось загрузить изображение",
-      error: e.message
+    res.status(400).json({
+      error: e,
+      message: "Что-то пошло не так..."
     });
   }
+});
+app.get("/upload/image/:id", async (req, res) => {
+  try {} catch (e) {}
 });
 app.post("/update/history", async (req, res) => {
   try {
@@ -466,6 +508,7 @@ app.post("/update/history", async (req, res) => {
       id,
       info
     } = req.body;
+    console.log(id, info);
     const secret = id.slice(0, 4);
     const hash = crypto.createHash("sha256", "key").update(info.data).digest("hex");
     await _docModel.User.findByIdAndUpdate({
@@ -494,7 +537,9 @@ app.post("/update/history", async (req, res) => {
     });
   } catch (error) {
     return res.status(400).json({
-      message: "Произошла ошибка"
+      message: "Произошла ошибка",
+      error: error,
+      one: 1
     });
   }
 });
@@ -514,10 +559,8 @@ app.put("/update/history", async (req, res) => {
         [field]: value
       }
     });
-    console.log(id, key, index, value);
     return res.status(200).json({
-      message: "Операция сохранена",
-      ...data
+      message: "Операция сохранена"
     });
   } catch (error) {
     return res.status(400).json({
@@ -526,14 +569,16 @@ app.put("/update/history", async (req, res) => {
     });
   }
 });
-
-// app.get('/bundle.js', (req, res) => {
-//   const gzip = createGzip();
-//   const bundle = createReadStream(resolve(__dirname, '../../client/public/bundle.js'));
-//   res.set({ 'Content-Encoding': 'gzip', 'Cache-Control': 'max-age=86400' });
-//   bundle.pipe(gzip).pipe(res);
-// });
-
+app.get('/bundle.js', (req, res) => {
+  const gzip = (0, _zlib.createGzip)();
+  const bundle = (0, _fs.createReadStream)((0, _path.resolve)(__dirname, '../../client/public/bundle.js'));
+  res.set({
+    'Content-Encoding': 'gzip',
+    'Cache-Control': 'max-age=86400'
+  });
+  bundle.pipe(gzip).pipe(res);
+});
+//
 app.use("/", _express.default.static("client/public"));
 (0, _index.connect)();
 app.listen(PORT, () => console.log("Listening on port", PORT));
